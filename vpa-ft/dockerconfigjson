@@ -1,0 +1,7 @@
+{
+  "auths": {
+    "sys-loz-test-team-docker-local.artifactory.swg-devops.com": {
+            "auth": "cnVkcmFwcmFrYXNoLnJAaWJtLmNvbTpjbVZtZEd0dU9qQXhPakUyT1RJek5ETXpOVFE2TVdKeFQycE1SMVZ6UmxoTmJUQjZhVWhDT1ZsVFUxRTJSekpE"
+  }
+ }
+}

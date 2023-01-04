@@ -1,0 +1,69 @@
+#!/usr/bin/env groovy
+
+pipeline {
+  agent {label 'team-ocp-jenkins-pod'}
+  environment {
+         POK_BASTION_CREDS = credentials('POK_ST_OCP_hypervisor_login_credentials')
+         ARTIFACTORY_CREDS = credentials('jenkins-artifactory-creds')
+         OCP_ADMIN_JENKINS = credentials('OCP_ADMIN_JENKINS')
+         BOE_CONNECT_LNXGWNE = credentials('BOE_CONNECT')
+         BOE_CONNECT_LNXGWERO = credentials('BOE_CONNECT_2')
+         OCPPRJT="kitchen-sink-vertical-pod-autoscaler"
+       }
+  stages {
+     stage('Setup jenkins environment') {
+       steps {
+         // setup environment
+         sh './setupJenkinsEnvironment.sh'
+         // Logged into cluster, set to your project, artifactory secrets added...
+         // Now run the test scripts
+       }
+    }
+    stage('pre-cleanup'){
+      steps{
+        script { 
+           sh '''
+                oc delete project openshift-vertical-pod-autoscaler --ignore-not-found
+                oc delete operator vertical-pod-autoscaler.openshift-vertical-pod-autoscaler --ignore-not-found
+              '''
+              }
+          }
+    }
+    stage('Installation and verification of vpa-operator') {
+      steps {
+        script {
+         sh './install_vpa_operator.sh'
+         
+        }
+      }
+    }
+    stage('Vpa test for auto mode'){
+        steps{
+            sh './um_auto.sh '
+        }
+    }
+    stage('Vpa test for initial mode'){
+        steps{
+            sh './um_initial.sh'
+        }
+    }
+    stage('Vpa test for off mode'){
+        steps{
+            sh './um_off.sh'
+        }
+    }
+    stage('Vpa test for container exemption mode'){
+        steps{
+            sh './c_e.sh'
+        }
+    }
+  }
+  post {
+    always {
+            sh '''
+                oc delete project openshift-vertical-pod-autoscaler --ignore-not-found
+                oc delete operator vertical-pod-autoscaler.openshift-vertical-pod-autoscaler --ignore-not-found
+            '''
+    }
+    }
+}
